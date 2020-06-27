@@ -1,8 +1,8 @@
 import tensorflow as tf
 import time
+import argparse
 
-from constants import top_k, embedding_dim, units, BATCH_SIZE, start_epoch, attention_features_shape, \
-    checkpoint_path, img_name_val_file, cap_val_file, img_name_train_file, cap_train_file
+from constants import top_k, embedding_dim, units, attention_features_shape, checkpoint_path
 from encoder import CNN_Encoder
 from decoder import RNN_Decoder
 from optimizers import select_optimizer
@@ -11,40 +11,74 @@ from data_prep import DataLoader
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
-import pickle
 import nltk
 import pandas as pd
 
 # Parser
 
-validation_data = 'train'
+parser = argparse.ArgumentParser("./evaluate.py")
+parser.add_argument(
+    '--optimizer', '-o',
+    type=str,
+    required=True,
+    choices=['Adam', 'SGD', 'RMSProp'],
+    help='Optimizer choice',
+)
+parser.add_argument(
+    '--batch_size', '-bs',
+    type=int,
+    default=64,
+    help='Batch size',
+)
+parser.add_argument(
+    '--visualize', '-v',
+    type=str,
+    default=False,
+    help='Visualize each validation images with attention',
+)
+parser.add_argument(
+    '--test_validation', '-t',
+    type=str,
+    default=True,
+    help='Load validation data directly for validation',
+)
+parser.add_argument(
+    '--architecture', '-a',
+    type=str,
+    required=True,
+    choices=['Inception', 'ResNet101', 'ResNet50'],
+    help='Architecture choice',
+)
+
+FLAGS, unparsed = parser.parse_known_args()
+
+
+optimizer_name = FLAGS.optimizer
+architecture = FLAGS.architecture
+test_validation = FLAGS.test_validation
+BATCH_SIZE = FLAGS.batch_size
+VISUALIZE = FLAGS.visualize
+
+optimizer = select_optimizer(optimizer_name)
+
 
 vocab_size = top_k + 1
 encoder = CNN_Encoder(embedding_dim)
 decoder = RNN_Decoder(embedding_dim, units, vocab_size) # (256, 512, 5001)
 
-optimizer_name = 'Adam'
-optimizer = select_optimizer(optimizer_name)
+
+data_getter = DataLoader()
+data_getter.get_imgnames_captions()
+max_length, cap_vector, tokenizer = data_getter.get_tokenizer('validation')
+dataset_val = data_getter.get_dataset('validation', optimizer_name, architecture, BATCH_SIZE)
+img_name_train, cap_train = data_getter.img_name_train, data_getter.cap_train
+img_name_val, cap_val = data_getter.img_name_val, data_getter.cap_val
 
 ckpt = tf.train.Checkpoint(encoder=encoder,
                            decoder=decoder,
                            optimizer=optimizer)
 ckpt_manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=5)
 
-data_getter = DataLoader()
-max_length, cap_vector, tokenizer = data_getter.get_tokenizer()
-
-with open(img_name_val_file + '_' + optimizer_name + '.txt', 'rb') as fp:
-    img_name_val = pickle.load(fp)
-
-with open(cap_val_file + '_' + optimizer_name + '.txt', 'rb') as fp:
-    cap_val = pickle.load(fp)
-
-with open(img_name_train_file + '_' + optimizer_name + '.txt', 'rb') as fp:
-    img_name_train = pickle.load(fp)
-
-with open(cap_train_file + '_' + optimizer_name + '.txt', 'rb') as fp:
-    cap_train = pickle.load(fp)
 
 def evaluate(image):
     # Testing- Restore the checkpoint and predict- https://www.tensorflow.org/tutorials/text/nmt_with_attention
@@ -81,11 +115,10 @@ def evaluate(image):
     attention_plot = attention_plot[:len(result), :]
     return result, attention_plot
 
-def plot_attention(image, result, attention_plot):
+def plot_attention(image, result, attention_plot, rid):
     temp_image = np.array(Image.open(image))
-
+    plt.imshow(temp_image)
     fig = plt.figure(figsize=(10, 10))
-
     len_result = len(result)
     for l in range(len_result):
         temp_att = np.resize(attention_plot[l], (8, 8))
@@ -96,6 +129,8 @@ def plot_attention(image, result, attention_plot):
 
     plt.tight_layout()
     plt.show()
+    fig.savefig('evaluation_result_'+str(rid)+'.pdf', bbox_inches='tight')
+
 
 def compute_BLEU_score(reference, hypothesis):
     BLEU_1 = nltk.translate.bleu_score.sentence_bleu([reference], hypothesis, weights=(1.0, 0.0, 0.0, 0.0))
@@ -105,31 +140,35 @@ def compute_BLEU_score(reference, hypothesis):
     return BLEU_1, BLEU_2, BLEU_3, BLEU_4
 
 # rid = np.random.randint(0, len(img_name_val))
-VISUALIZE = False
+
 BLEU = []
 
-if validation_data == 'validation':
-    validation_image_names = img_name_val
-    validation_captions = cap_val
+if test_validation=='True':
+    print('Using Validation for validation')
+    images_validation = img_name_val
+    captions_validation = cap_val
 else:
-    validation_image_names = img_name_train
-    validation_captions = cap_train
+    print('Using Train for validation')
+    images_validation = img_name_train
+    captions_validation = cap_train
 
 
-for rid, image in enumerate(img_name_val[:5]):
-    image = img_name_val[rid]
-    real_caption = ' '.join([tokenizer.index_word[i] for i in cap_val[rid] if i not in [0]])
+
+for rid, image in enumerate(images_validation[:5]):
+    image = images_validation[rid]
+    real_caption = ' '.join([tokenizer.index_word[i] for i in captions_validation[rid] if i not in [0]])
     hypothesis, attention_plot = evaluate(image)
-    reference =  [tokenizer.index_word[i] for i in cap_val[rid] if i not in [0]]
+    reference =  [tokenizer.index_word[i] for i in captions_validation[rid] if i not in [0]]
     BLEU.append(list(compute_BLEU_score(reference, hypothesis)))
 
     print ('Real Caption:', real_caption)
     print ('Prediction Caption:', ' '.join(hypothesis))
     if VISUALIZE:
-        plot_attention(image, hypothesis, attention_plot)
-BLEU_mean = np.round(np.mean(np.array(BLEU), axis=0),4)
+        plot_attention(image, hypothesis, attention_plot, rid)
 
-metrics = {'Val_images': [len(img_name_val)],'BLEU-1': [BLEU_mean[0]], 'BLEU-2': [BLEU_mean[1]],
+
+BLEU_mean = np.round(np.mean(np.array(BLEU), axis=0),4)
+metrics = {'Val_images': [len(images_validation)],'BLEU-1': [BLEU_mean[0]], 'BLEU-2': [BLEU_mean[1]],
            'BLEU-3': [BLEU_mean[2]], 'BLEU-4': [BLEU_mean[3]]}
 metrics_df = pd.DataFrame(metrics)
 metrics_filename = 'metrics.csv'

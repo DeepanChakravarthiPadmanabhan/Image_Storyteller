@@ -1,43 +1,65 @@
 import tensorflow as tf
 import time
-import pickle
 import matplotlib.pyplot as plt
+import argparse
 
-from constants import top_k, embedding_dim, units, BATCH_SIZE, start_epoch, attention_features_shape, \
-    checkpoint_path, img_name_val_file, cap_val_file, img_name_train_file, cap_train_file, num_epochs
+from constants import top_k, embedding_dim, units, start_epoch, \
+    checkpoint_path
 
 from encoder import CNN_Encoder
 from decoder import RNN_Decoder
 from loss import loss_function
 from optimizers import select_optimizer
 
-
 from data_prep import DataLoader
-
 
 # Parser
 
-data_getter = DataLoader()
-data_getter.get_imgnames_captions()
-max_length, cap_vector, tokenizer = data_getter.get_tokenizer()
-dataset, dataset_val = data_getter.get_dataset()
-img_name_train, img_name_val = data_getter.img_name_train, data_getter.img_name_val
-cap_train, cap_val = data_getter.cap_train, data_getter.cap_val
+parser = argparse.ArgumentParser("./main.py")
+parser.add_argument(
+    '--optimizer', '-o',
+    type=str,
+    required=True,
+    choices=['Adam', 'SGD', 'RMSProp'],
+    help='Optimizer choice',
+)
+parser.add_argument(
+    '--batch_size', '-bs',
+    type=int,
+    default=64,
+    help='Batch size',
+)
+parser.add_argument(
+    '--num_epochs', '-n',
+    type=int,
+    default=20,
+    help='Batch size',
+)
+parser.add_argument(
+    '--architecture', '-a',
+    type=str,
+    required=True,
+    choices=['Inception', 'ResNet101', 'ResNet50'],
+    help='Architecture choice',
+)
 
-optimizer_name = 'Adam'
+
+FLAGS, unparsed = parser.parse_known_args()
+
+optimizer_name = FLAGS.optimizer
+BATCH_SIZE = FLAGS.batch_size
+num_epochs = FLAGS.num_epochs
+architecture = FLAGS.architecture
+
 optimizer = select_optimizer(optimizer_name)
 
-with open(img_name_val_file + '_' + optimizer_name + '.txt', 'wb') as fp:
-    pickle.dump(img_name_val, fp)
-
-with open(cap_val_file + '_' + optimizer_name + '.txt', 'wb') as fp:
-    pickle.dump(cap_val, fp)
-
-with open(img_name_train_file + '_' + optimizer_name + '.txt', 'wb') as fp:
-    pickle.dump(img_name_train, fp)
-
-with open(cap_train_file + '_' + optimizer_name + '.txt', 'wb') as fp:
-    pickle.dump(cap_train, fp)
+data_getter = DataLoader()
+data_getter.get_imgnames_captions()
+max_length, cap_vector, tokenizer = data_getter.get_tokenizer('train')
+dataset = data_getter.get_dataset('train', optimizer_name, architecture, BATCH_SIZE)
+dataset_val = data_getter.get_dataset('validation', optimizer_name, architecture, BATCH_SIZE)
+img_name_train, img_name_val = data_getter.img_name_train, data_getter.img_name_val
+cap_train, cap_val = data_getter.cap_train, data_getter.cap_val
 
 
 vocab_size = top_k + 1
@@ -79,22 +101,17 @@ def train_step(img_tensor, target, module='train'):
             dec_input = tf.expand_dims(target[:, i], 1)
 
     total_loss = (loss / int(target.shape[1]))
-
-    if module == 'train':
-        print('Propagating weights in train')
-        trainable_variables = encoder.trainable_variables + decoder.trainable_variables
-        gradients = tape.gradient(loss, trainable_variables)
-        optimizer.apply_gradients(zip(gradients, trainable_variables))
+    print('Propagating weights in train')
+    trainable_variables = encoder.trainable_variables + decoder.trainable_variables
+    gradients = tape.gradient(loss, trainable_variables)
+    optimizer.apply_gradients(zip(gradients, trainable_variables))
 
     return loss, total_loss
 
 loss_plot = []
 loss_plot_val = []
 
-run = True
-# for epoch in range(start_epoch, EPOCHS):
-epoch = 0
-while run:
+for epoch in range(start_epoch, EPOCHS):
 
     start = time.time()
     total_loss = 0
@@ -118,33 +135,29 @@ while run:
 
     ############### VALIDATION #######################
 
-    total_loss_val = 0
+    # total_loss_val = 0
+    #
+    # for (batch_val, (img_tensor_val, target_val)) in enumerate(dataset_val):
+    #     batch_loss_val, t_loss_val = train_step(img_tensor_val, target_val, 'validation')
+    #     total_loss_val += t_loss_val
+    #
+    #     if batch_val % 100 == 0:
+    #         print('Validation: Epoch {} Batch {} Loss {:.4f}'.format(
+    #             epoch + 1, batch_val, batch_loss_val.numpy() / int(target_val.shape[1])))
+    #
+    # # storing the epoch end loss value to plot later.
+    # loss_plot_val.append(total_loss_val / num_steps_val)
+    # print('Validation: Epoch {} Loss {:.6f}'.format(epoch + 1, total_loss_val / num_steps_val))
+    # print('Validation: Time taken for 1 epoch {} second \n'.format(time.time() - start))
 
-    for (batch_val, (img_tensor_val, target_val)) in enumerate(dataset_val):
-        batch_loss_val, t_loss_val = train_step(img_tensor_val, target_val, 'validation')
-        total_loss_val += t_loss_val
-
-        if batch_val % 100 == 0:
-            print('Validation: Epoch {} Batch {} Loss {:.4f}'.format(
-                epoch + 1, batch_val, batch_loss_val.numpy() / int(target_val.shape[1])))
-
-    # storing the epoch end loss value to plot later.
-    loss_plot_val.append(total_loss_val / num_steps_val)
-    print('Validation: Epoch {} Loss {:.6f}'.format(epoch + 1, total_loss_val / num_steps_val))
-    print('Validation: Time taken for 1 epoch {} second \n'.format(time.time() - start))
-
-    epoch = epoch+1
-
-    if  loss_plot_val[-1] - loss_plot[-1] <1:
-        run=False
-
-
-plt.figure(figsize=(12,10))
+fig_name = plt.figure(figsize=(12,10))
 plt.plot(loss_plot, label='Train loss')
 plt.plot(loss_plot_val, label='Validation loss')
 plt.legend()
 plt.grid()
 plt.show()
+fig_name.savefig('trainval_curve.pdf', bbox_inches='tight')
+
 
 
 
