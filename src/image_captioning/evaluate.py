@@ -2,10 +2,10 @@ import tensorflow as tf
 import time
 
 from constants import top_k, embedding_dim, units, BATCH_SIZE, start_epoch, attention_features_shape, \
-    checkpoint_path, img_name_val_file, cap_val_file
+    checkpoint_path, img_name_val_file, cap_val_file, img_name_train_file, cap_train_file
 from encoder import CNN_Encoder
 from decoder import RNN_Decoder
-from loss import optimizer, loss_function
+from optimizers import select_optimizer
 from util import get_Inception, load_image
 from data_prep import DataLoader
 import numpy as np
@@ -15,19 +15,36 @@ import pickle
 import nltk
 import pandas as pd
 
+# Parser
+
+validation_data = 'train'
 
 vocab_size = top_k + 1
 encoder = CNN_Encoder(embedding_dim)
 decoder = RNN_Decoder(embedding_dim, units, vocab_size) # (256, 512, 5001)
+
+optimizer_name = 'Adam'
+optimizer = select_optimizer(optimizer_name)
+
 ckpt = tf.train.Checkpoint(encoder=encoder,
                            decoder=decoder,
                            optimizer=optimizer)
+ckpt_manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=5)
 
 data_getter = DataLoader()
-data_getter.get_imgnames_captions()
 max_length, cap_vector, tokenizer = data_getter.get_tokenizer()
 
-ckpt_manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=5)
+with open(img_name_val_file + '_' + optimizer_name + '.txt', 'rb') as fp:
+    img_name_val = pickle.load(fp)
+
+with open(cap_val_file + '_' + optimizer_name + '.txt', 'rb') as fp:
+    cap_val = pickle.load(fp)
+
+with open(img_name_train_file + '_' + optimizer_name + '.txt', 'rb') as fp:
+    img_name_train = pickle.load(fp)
+
+with open(cap_train_file + '_' + optimizer_name + '.txt', 'rb') as fp:
+    cap_train = pickle.load(fp)
 
 def evaluate(image):
     # Testing- Restore the checkpoint and predict- https://www.tensorflow.org/tutorials/text/nmt_with_attention
@@ -87,18 +104,19 @@ def compute_BLEU_score(reference, hypothesis):
     BLEU_4 = nltk.translate.bleu_score.sentence_bleu([reference], hypothesis, weights=(0.25, 0.25, 0.25, 0.25))
     return BLEU_1, BLEU_2, BLEU_3, BLEU_4
 
-with open(img_name_val_file, 'rb') as fp:
-    img_name_val = pickle.load(fp)
-
-with open(cap_val_file, 'rb') as fp:
-    cap_val = pickle.load(fp)
-
-
 # rid = np.random.randint(0, len(img_name_val))
 VISUALIZE = False
 BLEU = []
 
-for rid, image in enumerate(img_name_val):
+if validation_data == 'validation':
+    validation_image_names = img_name_val
+    validation_captions = cap_val
+else:
+    validation_image_names = img_name_train
+    validation_captions = cap_train
+
+
+for rid, image in enumerate(img_name_val[:5]):
     image = img_name_val[rid]
     real_caption = ' '.join([tokenizer.index_word[i] for i in cap_val[rid] if i not in [0]])
     hypothesis, attention_plot = evaluate(image)

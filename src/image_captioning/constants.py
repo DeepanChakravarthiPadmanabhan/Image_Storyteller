@@ -1,15 +1,17 @@
 annotation_folder = '/annotations/'
 image_folder = '/train2014/'
 checkpoint_path = './checkpoints/train'
-img_name_val_file = "img_name_val.txt"
-cap_val_file = "cap_val.txt"
+img_name_val_file = "img_name_val"
+cap_val_file = "cap_val"
+img_name_train_file = "img_name_train"
+cap_train_file = "cap_train"
 
-top_k = 5000
-num_examples = 30000
-num_epochs = 30
+top_k = 100
+num_examples = 100
+num_epochs = 20
 
 # Tunable parameters depending on the system's configuration.
-BATCH_SIZE = 64
+BATCH_SIZE = 16
 BUFFER_SIZE = 1000
 embedding_dim = 256
 units = 512

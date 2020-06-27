@@ -73,7 +73,6 @@ class DataLoader():
         # print(tokenizer.document_count)  # Number of captions
         # print(tokenizer.word_index) # Dict of word and respective index value encoded
         # print(tokenizer.word_docs)
-        train_seqs = tokenizer.texts_to_sequences(train_captions)
         tokenizer.word_index['<pad>'] = 0
         tokenizer.index_word[0] = '<pad>'
         train_seqs = tokenizer.texts_to_sequences(train_captions)
@@ -132,4 +131,13 @@ class DataLoader():
 
         dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
 
-        return dataset
+        dataset_val = tf.data.Dataset.from_tensor_slices((self.img_name_val, self.cap_val))
+        dataset_val = dataset_val.map(lambda item1, item2: tf.numpy_function(
+            map_func, [item1, item2], [tf.float32, tf.int32]),
+                                      num_parallel_calls=tf.data.experimental.AUTOTUNE)
+
+        dataset_val = dataset_val.shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
+        dataset_val = dataset_val.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+
+
+        return dataset, dataset_val

@@ -11,6 +11,10 @@ def get_Inception():
     image_features_extract_model = tf.keras.Model(new_input, hidden_layer)
     return image_features_extract_model
 
+def get_ResNet():
+
+    pass
+
 def calc_max_length(tensor):
     return max(len(t) for t in tensor)
 

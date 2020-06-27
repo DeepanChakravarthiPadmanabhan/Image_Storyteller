@@ -1,6 +1,5 @@
 import tensorflow as tf
 
-optimizer = tf.keras.optimizers.Adam()
 loss_object = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True, reduction='none')
 
 def loss_function(real, pred):
