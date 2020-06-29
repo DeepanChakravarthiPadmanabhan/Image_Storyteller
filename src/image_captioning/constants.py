@@ -6,8 +6,7 @@ cap_val_file = "cap_val"
 img_name_train_file = "img_name_train"
 cap_train_file = "cap_train"
 
-top_k = 50
-num_examples = 100
+top_k = 5000
 
 # Tunable parameters depending on the system's configuration.
 BUFFER_SIZE = 1000

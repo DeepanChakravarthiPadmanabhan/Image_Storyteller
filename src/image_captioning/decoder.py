@@ -17,6 +17,9 @@ class RNN_Decoder(tf.keras.Model):
 
         self.attention = BahdanauAttention(self.units)
 
+    # @tf.function(input_signature=[tf.TensorSpec(shape=[None, 1], dtype=tf.int32, name='x'),
+    #        tf.TensorSpec(shape=[None, 64, 256], dtype=tf.float32, name="features"),
+    #        tf.TensorSpec(shape=[None, 512], dtype=tf.float32, name="hidden")])
     def call(self, x, features, hidden):
         # (x, features, hidden) shape = (bs, 1) (bs, 64, embedding_size) (bs, units)
         # defining attention as a separate model
