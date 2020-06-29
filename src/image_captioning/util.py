@@ -49,5 +49,5 @@ def validation_requirements():
     with open( img_name_val_file +'.pkl', 'rb') as fp:
         img_name_val = pickle.load(fp)
 
-    return max_length, tokenizer, cap_val, img_name_val
+    return tokenizer, max_length, cap_val, img_name_val
 
