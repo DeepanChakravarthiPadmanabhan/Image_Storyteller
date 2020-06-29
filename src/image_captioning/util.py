@@ -1,24 +1,22 @@
 import tensorflow as tf
 import numpy as np
+import pickle
+
+from constants import cap_val_file, img_name_val_file
 
 
-def get_Inception():
+def get_architecture(architecture = 'Inception'):
+    if architecture == 'Inception':
     # Initialize Inception V3 and load the pretrained ImageNet weights
-    # print('Reading InceptionNet')
-    # image_model = tf.keras.applications.InceptionV3(include_top=False, # Whether to include the FCN at the last layer
-    #                                              weights='imagenet') # Use pre-trained imagenet weights.
-    # print('Reading RESNET')
-    # image_model = tf.keras.applications.ResNet50(include_top=False, weights='imagenet')
-    print('Reading INCEPTION RESNET')
-    image_model = tf.keras.applications.InceptionResNetV2(include_top=False, weights='imagenet')
+        print('Reading Inception')
+        image_model = tf.keras.applications.InceptionV3(include_top=False, weights='imagenet') 
+    elif architecture == 'Inception-Resnet':
+        print('Reading Inception-ResNet')
+        image_model = tf.keras.applications.InceptionResNetV2(include_top=False, weights='imagenet')
     new_input = image_model.input
     hidden_layer = image_model.layers[-1].output
     image_features_extract_model = tf.keras.Model(new_input, hidden_layer)
     return image_features_extract_model
-
-def get_ResNet():
-
-    pass
 
 def calc_max_length(tensor):
     return max(len(t) for t in tensor)
@@ -38,4 +36,18 @@ def map_func(img_name, cap):
     # Load the numpy files.
     img_tensor = np.load(img_name.decode('utf-8')+'.npy')
     return img_tensor, cap
+
+def validation_requirements():
+    with open('tokenizer.pkl', 'rb') as fp:
+        tokenizer = pickle.load(fp)
+    with open('max_length.pkl', 'rb') as fp:
+        max_length = pickle.load(fp)
+    with open('cap_vector.pkl', 'rb') as fp:
+        cap_vector = pickle.load(fp)
+    with open(cap_val_file + '.pkl', 'rb') as fp:
+        cap_val = pickle.load(fp)
+    with open( img_name_val_file +'.pkl', 'rb') as fp:
+        img_name_val = pickle.load(fp)
+
+    return max_length, tokenizer, cap_val, img_name_val
 
