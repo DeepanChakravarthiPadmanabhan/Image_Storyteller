@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "train.py", line 47, in <module>
+    X, y = generate_one_hot_encoding(sentences,next_chars)
+  File "/home/smuthi2s/perl5/NLP/Image_Storyteller/char_embeddings/preprocess.py", line 11, in generate_one_hot_encoding
+    X = np.zeros((len(sentences), maxlen, len(chars)), dtype=np.bool)
+NameError: name 'np' is not defined
