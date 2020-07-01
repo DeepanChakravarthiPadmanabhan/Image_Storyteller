@@ -14,7 +14,7 @@ Vahid MohammadiGahrooei
 ![Pipeline](https://user-images.githubusercontent.com/43172178/86264098-6160ba00-bbc2-11ea-84c0-d6cd8999f99c.png)
 
 <p align="center">
-  Figure 1: Two-stage pipe of Neural-storyteller.
+  Figure 1: Two-stage pipeline of Neural-storyteller.
 </p>
 
 ### Usage
@@ -42,7 +42,7 @@ For detailed description on available arguments for main.py and evaluate.py run:
 1. Check python notebook for story generation [notebook](https://github.com/DeepanChakravarthiPadmanabhan/Image_Storyteller/blob/master/Stroy_Generator.ipynb)
 ### Documents
 
-Kindly refer the presentation of the project work [here](https://github.com/DeepanChakravarthiPadmanabhan/Image_Storyteller/files/4859009/Presentation_AGrippingStory-WrittenbyDeepNeuralNetwork.pdf).
+Kindly refer the presentation of the project work [here](https://github.com/DeepanChakravarthiPadmanabhan/Image_Storyteller/blob/master/Documents/Presentation_AGrippingStory-WrittenbyDeepNeuralNetwork.pdf).
 
 ### Declaration
 
