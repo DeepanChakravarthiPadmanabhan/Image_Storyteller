@@ -60,9 +60,9 @@ The code is adapted from TensorFlow - Image captioning tutorial for image captio
 5. Tensorflow. Tensorflow - Image captioning. Accessed on: 20-06-2020. [Online]. 2018. url: https://www.tensorflow.org/tutorials/text/image_captioning.
 6. Tensorflow. Tensorflow - Text generation. Accessed on: 20-06-2020. [Online]. 2018. url: https://www.tensorflow.org/tutorials/text/text_generation.
 7. Sanyam Agarwal. My thoughts in Skip-thoughts. Accessed on: 20-06-2020. [Online]. 2018. url:
-https://medium.com/@sanyamagarwal/my- thoughts- on- skip-thoughts- a3e773605efa.
+https://medium.com/@sanyamagarwal/my-thoughts-on-skip-thoughts-a3e773605efa.
 8. Ryan Kiros et al. “Skip-Thought Vectors”. In: arXiv preprint arXiv:1506.06726 (2015).
-Gabriel Loye. Attention mechanisms. Accessed on: 20-06-2020. [Online]. 2019. url: https://blog.floydhub.com/attention- mechanism.
+9. Gabriel Loye. Attention mechanisms. Accessed on: 20-06-2020. [Online]. 2019. url: https://blog.floydhub.com/attention- mechanism.
 
 
 
