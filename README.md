@@ -1,6 +1,6 @@
 # A Gripping Story - Written by Deep Neural Network
 
-#### Team members
+### Team members
 
 [Deepan Chakravarthi Padmanabhan](https://github.com/DeepanChakravarthiPadmanabhan)
 
@@ -9,7 +9,7 @@
 Vahid MohammadiGahrooei
 
 
-#### Pipeline
+### Pipeline
 
 ![Pipeline](https://user-images.githubusercontent.com/43172178/86264098-6160ba00-bbc2-11ea-84c0-d6cd8999f99c.png)
 
@@ -17,9 +17,9 @@ Vahid MohammadiGahrooei
   Figure 1: Two-stage pipe of Neural-storyteller.
 </p>
 
-#### Usage
+### Usage
 
-### Image Captioning module
+#### Image Captioning module
 
 1. Navigate to the image captioning module.
 
@@ -39,19 +39,19 @@ For detailed description on available arguments for main.py and evaluate.py run:
 
 ```python main.py --help```
 
-#### Documents
+### Documents
 
 Kindly refer the presentation of the project work [here](https://github.com/DeepanChakravarthiPadmanabhan/Image_Storyteller/files/4859009/Presentation_AGrippingStory-WrittenbyDeepNeuralNetwork.pdf).
 
-#### Declaration
+### Declaration
 
 This is a project work done for Natural Language Processing - Summer Semester 2020 course work at Hochschule Bonn-Rhein-Sieg.
 
-#### Acknowledgement
+### Acknowledgement
 
 The code is adapted from TensorFlow - Image captioning tutorial for image captioning.
 
-#### Reference
+### Reference
 
 1. Yukun Zhu et al. “Aligning Books and Movies: Towards Story-like Visual Explanations by Watching Movies and Reading Books”. In: arXiv preprint arXiv:1506.06724 (2015).
 2. MD Zakir Hossain et al. “A comprehensive survey of deep learning for image captioning”. In: ACM Computing Surveys (CSUR) 51.6 (2019), pp. 1–36.
