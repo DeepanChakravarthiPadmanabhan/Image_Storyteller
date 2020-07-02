@@ -39,7 +39,8 @@ For detailed description on available arguments for main.py and evaluate.py run:
 
 ```python main.py --help```
 #### Story generation module
-1. Check python notebook for story generation [notebook](https://github.com/DeepanChakravarthiPadmanabhan/Image_Storyteller/blob/master/Stroy_Generator.ipynb)
+1. Check python notebook for story generation [notebook](https://github.com/DeepanChakravarthiPadmanabhan/Image_Storyteller/blob/master/Stroy_Generator.ipynb).
+
 ### Documents
 
 Kindly refer the presentation of the project work [here](https://github.com/DeepanChakravarthiPadmanabhan/Image_Storyteller/blob/master/Documents/Presentation_AGrippingStory-WrittenbyDeepNeuralNetwork.pdf).
