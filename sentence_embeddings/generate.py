@@ -33,6 +33,7 @@ model = layers.skip_thoughts(thought_size=thought_size, word_size=embed_dim, voc
                              max_length=max_length)
 # optimizer = tf.optimizers.Adam(learning_rate=0.001, clipnorm=5.0)
 # checkpoint = tf.train.Checkpoint(optimizer=optimizer, model=model)
+#PATH to saved model
 checkpoint_dir = "/scratch/smuthi2s/NLP_data/logs"
 checkpoint_path = "/scratch/smuthi2s/NLP_data/logs/200_ckpt-50"
 latest = tf.train.latest_checkpoint(checkpoint_dir)

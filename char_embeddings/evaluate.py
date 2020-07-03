@@ -10,6 +10,7 @@ def sample(preds, temperature=1.0):
     probas = np.random.multinomial(1, preds, 1)
     return np.argmax(probas)
 
+# PATH for dataset location
 book_corpus = open('/scratch/smuthi2s/NLP_data/books/books_large_p1.txt', 'rb').readlines()[:20]
 print ('Length of text: {} characters'.format(len(book_corpus)))
 # def preprocess_data(book_corpus):
@@ -27,11 +28,12 @@ print(chars)
 char_indices = dict((c, i) for i, c in enumerate(chars))
 indices_char = dict((i, c) for i, c in enumerate(chars))
 
-
+# PATH to load saved model
 model = load_model("char_story_generator_20100.h5")
 variance = 0.5
 print('Variance: ', variance)
 maxlen = 100
+# Input sentence
 sentence = 'once upon a time'
 # sentence = 'and both that morning and both'
 generated = ''

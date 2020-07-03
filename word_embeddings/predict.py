@@ -18,8 +18,8 @@ class Prediction():
         self.idx2word = {v:k for k,v in self.tokenizer.word_index.items()}
         self.max_length = max_len
 
-    def load_model(self):
-        self.model = load_model("lang_model.h5")
+    def load_model(self,path):
+        self.model = load_model(path)
 
     def predict_sequnce(self,text,num_words):
         for id in range(num_words):

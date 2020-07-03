@@ -3,9 +3,9 @@ Configuration file.
 """
 import os
 
-thought_size = 480
-embed_dim = 256
-vocab_size = 2000
+thought_size = 120
+embed_dim = 62
+vocab_size = 10000
 max_length = 42
 epochs = 50
 # lr = 5e-4
@@ -18,5 +18,5 @@ learning_rate_decay_steps = 400000,
 number_of_steps = 500000,
 clip_gradient_norm = 5.0
 
-checkpoint_dir = '/scratch/smuthi2s/NLP_data/logs_480'
+checkpoint_dir = '/scratch/smuthi2s/NLP_data/logs_120'
 checkpoint_prefix = os.path.join(checkpoint_dir, "2000_ckpt")

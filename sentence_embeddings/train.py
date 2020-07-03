@@ -52,14 +52,6 @@ def train():
 
         return losses
 
-    # @tf.function
-    # def distributed_train_step(dataset_inputs):
-    #     per_replica_losses = strategy.experimental_run_v2(train_step, args=(dataset_inputs, optimizer))
-    #     return strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_losses, axis=None)
-    #
-    # @tf.function
-    # def distributed_test_step(dataset_inputs):
-    #     return strategy.experimental_run_v2(val_step, args=(dataset_inputs,))
 
     for epoch in range(epochs):
         start = time.time()
@@ -71,40 +63,16 @@ def train():
         total_testing_steps = val_size // global_batch_size
 
         for step, x in tqdm(enumerate(train_dataset), total=total_training_steps):
-            # print("start")
-            # print("inside train---------------------------",step,max_length)
             current_lr = 0.001
-            # print("111")
             current_loss = train_step(x,optimizer)/max_length
-            # print("222")
             total_loss += current_loss
             num_batches += 1
-            # print("1")
-            # if step % 10 == 0:
-            #     # print("2")
-            #     with train_summary_writer.as_default():
-            #         tf.summary.scalar('loss', current_loss, step=step)
-            #         tf.summary.scalar('lr', current_lr ,step=step)
-            #     template = ("Epoch {}, Step {}, Loss: {}, lr: {:.6f}")
-            #     print(template.format(epoch + 1, step, current_loss, current_lr))
-            # print("4")
-            # if step % 100 == 0:
-            #     checkpoint.save(checkpoint_prefix)
         try:
-            # print("3")
             for step, x in tqdm(enumerate(val_dataset), total=total_testing_steps):
-                # print("inside val---------------------------",step)
-
                 current_test_loss = val_step(x)/max_length
                 total_test_loss += current_test_loss
                 num_test_batches += 1
 
-                # if step % 100 == 0:
-                #     with test_summary_writer.as_default():
-                #         tf.summary.scalar('val_loss', current_test_loss, step=step)
-                #     template = ("Epoch {}, Step {}, Val Loss: {}")
-                #
-                #     print(template.format(epoch + 1, step, current_test_loss))
         except:
             pass
         # print("5")
@@ -150,8 +118,6 @@ if __name__ == "__main__":
     model = layers.skip_thoughts(thought_size=thought_size, word_size=embed_dim, vocab_size=vocab_size,
                                  max_length=max_length)
 
-    # custom lr schedules
-    # lr = lr_schedule.CustomSchedule(1,warmu)
     lr = 0.1
     optimizer = tf.optimizers.Adam(learning_rate=lr, clipnorm=clip_gradient_norm)
     checkpoint = tf.train.Checkpoint(optimizer=optimizer, model=model)
@@ -183,6 +149,7 @@ if __name__ == "__main__":
     # sftp://smuthi2s@wr0.wr.inf.h-brs.de
     num_lines = 2000
     print("2000 lines dataset 240 embed size")
+    # PATH to dataset
     with open('/scratch/smuthi2s/NLP_data/books/books_large_p1.txt', 'r') as in_file:
     # with open('/home/smuthi2s/perl5/NLP/Image_Storyteller/tf2-skip-thoughts/data.txt', 'r') as in_file:
         total_sentences = in_file.read().splitlines()[:num_lines]
@@ -194,19 +161,11 @@ if __name__ == "__main__":
         f.write(json.dumps(tokenizer.to_json(), ensure_ascii=False))
     encoded_data = tokenizer.texts_to_sequences(total_sentences)
     vocab_size = len(tokenizer.word_counts)+1
-    # with open('./data/total_sentences', 'rb') as t:
-    #     total_sentences = pickle.load(t)
     lengths = [int(len(i)) for i in encoded_data]
-    # print(lengths)
-    # with open('./data/lengths', 'rb') as l:
-    #     lengths = pickle.load(l)
 
     print("Creating Tensorflow 2.0 datasets & distributed training strategy")
-    # train_batches = tf.data.Dataset.from_generator(lambda: iter(zip(encoded_data, lengths)), output_types=(tf.int64, tf.int64))
-    # print(train_batches.take(3).as_numpy_iterator(),"--------------")
     max_length = max(lengths)
     print(max_length)
-    # print(encoded_data,vocab_size,max_length)
     sequences = pad_sequences(encoded_data, maxlen=max_length, padding='pre')
     sequences = array(sequences)
     dataset = tf.data.Dataset.from_tensor_slices((sequences, lengths))
@@ -216,9 +175,6 @@ if __name__ == "__main__":
     if val_size > 0:
         val_dataset = dataset.take(val_size).batch(global_batch_size)
         train_dataset = dataset.skip(val_size).batch(global_batch_size)
-
-        # train_dist_dataset = strategy.experimental_distribute_dataset(train_dataset)
-        # val_dist_dataset = strategy.experimental_distribute_dataset(val_dataset)
     else:
         dataset = dataset.batch(global_batch_size)
         train_dist_dataset = strategy.experimental_distribute_dataset(dataset)
@@ -229,6 +185,4 @@ if __name__ == "__main__":
     train_summary_writer = tf.summary.create_file_writer(train_log_dir)
     test_summary_writer = tf.summary.create_file_writer(test_log_dir)
 
-    # Start training
-    # with strategy.scope():
     train()

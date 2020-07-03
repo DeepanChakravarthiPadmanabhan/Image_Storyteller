@@ -13,6 +13,8 @@ from tensorflow.keras.models import load_model
 import re
 from preprocess import preprocess_data, generate_one_hot_encoding
 
+
+# PATH of the dataset, change it for user PATH
 book_corpus = open('/scratch/smuthi2s/NLP_data/books/books_large_p1.txt', 'rb').readlines()[:20000]
 print ('Length of text: {} characters'.format(len(book_corpus)))
 corpus = preprocess_data(book_corpus)
@@ -56,6 +58,7 @@ model.compile(loss='categorical_crossentropy', optimizer='adam')
 print("Compiling model complete...")
 model.summary()
 
-EPOCHS = 50
+EPOCHS = 100
 history = model.fit(X, y,batch_size=32, epochs=EPOCHS)
+# model save PATH
 model.save('char_story_generator_20000_'+str(EPOCHS)+'.h5')

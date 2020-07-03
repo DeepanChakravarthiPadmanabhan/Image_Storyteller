@@ -24,15 +24,18 @@ class Preprocessing():
         self.x = None
         self.y = None
         self.tokenizer = None
+        self.num_lines = 0
 
-    def load_data(self):
+    def load_data(self,num_lines):
+        self.num_lines = num_lines
         fp = open(self.input_data_file,'r')
-        self.data = fp.read().splitlines()
+        self.data = fp.read().splitlines()[:num_lines]
         fp.close()
         print("done loading")
 
     def encode_data(self):
-        self.tokenizer = Tokenizer()
+        top_k = 10000
+        self.tokenizer = Tokenizer(num_words=top_k,oov_token="<unk>",filters='!"#$%&()*+.,-/:;=?@[\]^_`{|}~ ')
         self.tokenizer.fit_on_texts(self.data)
         self.encoded_data = self.tokenizer.texts_to_sequences(self.data)
         self.vocab_size = len(self.tokenizer.word_counts)+1
@@ -54,7 +57,7 @@ class Preprocessing():
     def get_config(self):
         return self.tokenizer.to_json()
     def save_config(self):
-        with open('tokenizer.json', 'w', encoding='utf-8') as f:
+        with open('new_tokenizer_'+str(self.num_lines)+'.json', 'w', encoding='utf-8') as f:
             f.write(json.dumps(self.get_config(), ensure_ascii=False))
         # with open('tokenizer_config.json', 'w') as f:
         #     f.write(json.dumps(self.get_config()))
